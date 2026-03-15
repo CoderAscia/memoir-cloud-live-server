@@ -1,0 +1,49 @@
+name: Local Deployment CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build the Docker image
+        run: |
+          docker build . --file Dockerfile --tag jlb027/memoir-server:latest --tag jlb027/memoir-server:${{ github.sha }}
+
+      - name: Push the Docker image
+        run: |
+          docker push jlb027/memoir-server:latest
+          docker push jlb027/memoir-server:${{ github.sha }}
+      
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Containers
+        shell: cmd
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          JOURNAL_KEY_HEX: ${{ secrets.JOURNAL_KEY_HEX }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+        run: |
+          docker-compose pull
+          docker-compose up -d --force-recreate
