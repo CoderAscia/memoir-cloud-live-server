@@ -19,6 +19,7 @@ wss.on("connection", async (socket: WebSocket, req) => {
   try {
     decodedToken = await admin.auth().verifyIdToken(token ?? "");
   } catch (err: any) {
+    console.log("Invalid Firebase token :" + token);
     console.error("Invalid Firebase token:", err.message);
     socket.close();
     return;
