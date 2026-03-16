@@ -8,6 +8,14 @@ services:
       - redis_data:/data
     restart: always
 
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+
   memoir_server:
     build: .
     image: jlb027/memoir-websocket-server:${IMAGE_TAG:-latest}
@@ -24,6 +32,7 @@ services:
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
     depends_on:
       - redis
+      - mongodb
     restart: always
 
   nginx:
@@ -39,3 +48,4 @@ services:
 
 volumes:
   redis_data:
+  mongodb_data:

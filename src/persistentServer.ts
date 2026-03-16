@@ -1,9 +1,16 @@
 import WebSocket, { WebSocketServer } from "ws";
 import admin from "./firebase_admin";
 import { v4 as uuidv4 } from 'uuid';
+import Database from "./database";
 
 const port = 3030;
 const API_KEY = process.env.OPENAI_API_KEY ?? null;
+
+// Initialize Database connection
+Database.getInstance().catch(err => {
+  console.error("Failed to initialize database:", err);
+  process.exit(1);
+});
 
 const wss = new WebSocketServer({ port: port, host: "0.0.0.0" });
 
