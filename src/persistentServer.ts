@@ -35,18 +35,27 @@ wss.on("connection", async (socket: WebSocket, req) => {
 
 
   console.log(`WebSocket: Connection request for ${fullUrl.pathname}${fullUrl.search ? ' with token' : ' without token'}`);
+  let userId: string;
 
-  let decodedToken: admin.auth.DecodedIdToken;
-  try {
-    decodedToken = await admin.auth().verifyIdToken(token ?? "") || token == "test_token";
-  } catch (err: any) {
-    console.log("Invalid Firebase token :" + token);
-    console.error("Invalid Firebase token:", err.message);
-    socket.close();
-    return;
+  // --- TEST BACKDOOR ---
+  // Allow a specific token string for Postman testing
+  if (token === "test_token") {
+    console.log("⚠️ WARNING: Test Backdoor Accessed ⚠️");
+    userId = "test_user_id";
+  } else {
+    // Normal Production Flow
+    let decodedToken: admin.auth.DecodedIdToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(token ?? "");
+      userId = decodedToken.uid;
+    } catch (err: any) {
+      console.log("Invalid Firebase token :" + token);
+      console.error("Invalid Firebase token:", err.message);
+      socket.close();
+      return;
+    }
   }
 
-  const userId = decodedToken.uid;
   console.log("Authenticated user UID:", userId);
 
   socket.on("close", async () => {
