@@ -11,9 +11,10 @@ if (API_KEY == null) throw new Error("API Key cannot be null");
 
 wss.on("connection", async (socket: WebSocket, req) => {
 
-  const url = req.url ?? "";
-  const params = new URLSearchParams(url.split('?')[1]);
-  const token = params.get("token");
+  const fullUrl = new URL(req.url ?? "", `http://${req.headers.host ?? "localhost"}`);
+  const token = fullUrl.searchParams.get("token");
+
+  console.log(`WebSocket: Connection request for ${fullUrl.pathname}${fullUrl.search ? ' with token' : ' without token'}`);
 
   let decodedToken: admin.auth.DecodedIdToken;
   try {
