@@ -2,7 +2,7 @@ name: Local Deployment CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","test_branch" ]
 
 jobs:
   build:
