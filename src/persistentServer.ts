@@ -187,6 +187,12 @@ wss.on("connection", async (socket: WebSocket, req) => {
         };
         await dbCharacters.create(newCharDoc as any);
 
+        // Update local memory and Redis cache to prevent stale data
+        if (userData && Array.isArray(userData.characters)) {
+          userData.characters.push(newCharDoc);
+          await redisClient.setSession(userId, userData, 3600);
+        }
+
         socket.send(JSON.stringify({
           type: "createCharacterResponse",
           status: "success",
