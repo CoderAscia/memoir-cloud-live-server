@@ -71,8 +71,8 @@ wss.on("connection", async (socket, req) => {
         console.error("WebSocket error:", error);
     });
     // 1. Try to get session from Redis
-    // let cachedSession = await redisClient.getSession(userId);
-    let cachedSession = null;
+    let cachedSession = await redisClient.getSession(userId);
+    // let cachedSession = null;
     if (cachedSession) {
         console.log(`Loaded user ${userId} from Redis (Cache)`);
         userData = cachedSession;
@@ -108,7 +108,7 @@ wss.on("connection", async (socket, req) => {
             characters: userCharacters
         };
         // 2. Save to Redis with a 1-hour TTL (3600 seconds)
-        await redisClient.setSession(userId, userData, 3600);
+        await redisClient.setSession(userId, userData, 180);
     }
     try {
         socket.on("message", async (data) => {
