@@ -186,6 +186,37 @@ wss.on("connection", async (socket, req) => {
             await dbConversations.update({ conversationId }, { $set: { timestamp: aiMsg.timestamp } });
             socket.send(JSON.stringify({ type: "chat", message_id: aiMsg.messageId, reply, timestamp: aiMsg.timestamp.toString() }));
         }
+        else if (parsedMessage.type == "createMemory") {
+            const { characterId, memoryTitle, memoryContent, memorySplashArts } = parsedMessage;
+            const newMemory = { memoryId: (0, uuid_1.v4)(), characterId, memoryTitle, memoryContent, memorySplashArts, timestamp: Date.now() };
+            await dbMemories.create(newMemory);
+            if (userData?.memories) {
+                userData.memories.push(newMemory);
+                await redisClient.setSession(userId, userData, TTL);
+            }
+            socket.send(JSON.stringify({ type: "createMemoryResponse", status: "success", data: newMemory }));
+        }
+        else if (parsedMessage.type == "updateMemory") {
+            const { memoryId, characterId, memoryTitle, memoryContent, memorySplashArts } = parsedMessage;
+            await dbMemories.update({ memoryId, characterId }, { $set: { memoryTitle, memoryContent, memorySplashArts } });
+            if (userData?.memories) {
+                const idx = userData.memories.findIndex((m) => m.memoryId === memoryId);
+                if (idx !== -1) {
+                    userData.memories[idx] = { ...userData.memories[idx], memoryTitle, memoryContent, memorySplashArts };
+                    await redisClient.setSession(userId, userData, TTL);
+                }
+            }
+            socket.send(JSON.stringify({ type: "updateMemoryResponse", status: "success", memoryId }));
+        }
+        else if (parsedMessage.type == "deleteMemory") {
+            const { memoryId, characterId } = parsedMessage;
+            await dbMemories.delete({ memoryId, characterId });
+            if (userData?.memories) {
+                userData.memories = userData.memories.filter((m) => m.memoryId !== memoryId);
+                await redisClient.setSession(userId, userData, TTL);
+            }
+            socket.send(JSON.stringify({ type: "deleteMemoryResponse", status: "success", memoryId }));
+        }
     };
     try {
         // --- AUTHENTICATION ---

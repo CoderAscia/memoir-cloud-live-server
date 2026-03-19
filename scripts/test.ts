@@ -47,7 +47,7 @@ async function runTests() {
         p = waitForResponse("createCharacterResponse");
         ws.send(JSON.stringify({
             type: "createCharacter",
-            characterName: `Test_Char_${Date.now()}`,
+            characterName: `Test_Character`,
             characterImagePath: "https://example.com/test.png",
             characterMetaData: {
                 characterStickers: [],
