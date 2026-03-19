@@ -27,7 +27,7 @@ class AIService {
      * Generates an AI reply based on the character's soul, memories, and chat history.
      */
     public async generateReply(characterId: string, conversationId: string): Promise<string> {
-        
+
         // 1. Fetch Character Soul (MetaData)
         const characterDoc = await this.dbCharacters.findOne({ characterId });
         if (!characterDoc) {
@@ -39,9 +39,9 @@ class AIService {
 
         // 2. Fetch Character Memories
         // We fetch all memories for this character to inject into the system prompt.
-        const memories = await this.dbMemories.find({ characterId });
+        const memories = await this.dbMemories.find({ characterId: characterId, sort: { timestamp: -1 }, limit: 100 });
         let memoriesText = "";
-        
+
         if (memories.length > 0) {
             memoriesText = "Here are important memories you must remember regarding the user:\n";
             memories.forEach(mem => {
@@ -67,14 +67,14 @@ Instructions:
 
         // 4. Fetch Chat History (Try Redis cache first, then MongoDB)
         let messageHistoryDocs: any[] | null = await redisClient.getConversationCache(conversationId);
-        
+
         if (messageHistoryDocs) {
             // Redis array has newest first, we just want the latest 20
             messageHistoryDocs = messageHistoryDocs.slice(0, 20);
         } else {
             // Fallback to MongoDB
             messageHistoryDocs = await this.dbMessages.find(
-                { conversationId }, 
+                { conversationId },
                 { sort: { timestamp: -1 }, limit: 20 }
             );
         }

@@ -31,7 +31,7 @@ class AIService {
         const { characterPersonality, characterBackstory, relationship } = characterMetaData;
         // 2. Fetch Character Memories
         // We fetch all memories for this character to inject into the system prompt.
-        const memories = await this.dbMemories.find({ characterId });
+        const memories = await this.dbMemories.find({ characterId: characterId, sort: { timestamp: -1 }, limit: 100 });
         let memoriesText = "";
         if (memories.length > 0) {
             memoriesText = "Here are important memories you must remember regarding the user:\n";

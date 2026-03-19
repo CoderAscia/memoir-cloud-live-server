@@ -161,6 +161,16 @@ wss.on("connection", async (socket, req) => {
             }
             socket.send(JSON.stringify({ type: "deleteCharacterResponse", status: "success", characterId }));
         }
+        else if (parsedMessage.type == "createConversation") {
+            const { characterId, conversationTitle } = parsedMessage;
+            const newConv = { conversationId: (0, uuid_1.v4)(), characterId, conversationTitle, timestamp: Date.now() };
+            await dbConversations.create(newConv);
+            if (userData?.conversations) {
+                userData.conversations.push(newConv);
+                await redisClient.setSession(userId, userData, TTL);
+            }
+            socket.send(JSON.stringify({ type: "createConversationResponse", status: "success", data: newConv }));
+        }
         else if (parsedMessage.type == "chat") {
             const { conversationId, message: msgContent } = parsedMessage;
             const conv = await dbConversations.findOne({ conversationId });

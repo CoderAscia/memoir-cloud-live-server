@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
-
-const ws = new WebSocket('ws://localhost:3030?token=test_token');
+import dotenv from 'dotenv';
+dotenv.config();
+const ws = new WebSocket(process.env.WS_URL!);
 
 let characterId = "";
 let conversationId = "";
@@ -37,9 +38,9 @@ async function runTests() {
         // 1. getLatestUserData
         console.log("1. Testing getLatestUserData...");
         let p = waitForResponse("syncResponse");
-        ws.send(JSON.stringify({ type: "getLatestUserData" }));
+        ws.send(JSON.stringify({ type: "getLatestUserData", lastSyncVersion: "0.0.0" }));
         let res = await p;
-        console.log("✅ getLatestUserData response:", `Loaded ${res.data?.characters?.length || 0} characters.`);
+        console.log("✅ getLatestUserData response:", `Loaded ${res.delta_updates.characters.length || 0} characters.`);
 
         // 2. createCharacter
         console.log("\n2. Testing createCharacter...");

@@ -178,6 +178,12 @@ wss.on("connection", async (socket: WebSocket, req) => {
       if (userData?.characters) { userData.characters = userData.characters.filter((c: any) => c.characterId !== characterId); await redisClient.setSession(userId, userData, TTL); }
       socket.send(JSON.stringify({ type: "deleteCharacterResponse", status: "success", characterId }));
 
+    } else if (parsedMessage.type == "createConversation") {
+      const { characterId, conversationTitle } = parsedMessage;
+      const newConv: ConversationDocument = { conversationId: uuidv4(), characterId, conversationTitle, timestamp: Date.now() };
+      await dbConversations.create(newConv as any);
+      if (userData?.conversations) { userData.conversations.push(newConv); await redisClient.setSession(userId, userData, TTL); }
+      socket.send(JSON.stringify({ type: "createConversationResponse", status: "success", data: newConv }));
     } else if (parsedMessage.type == "chat") {
       const { conversationId, message: msgContent } = parsedMessage;
       const conv = await dbConversations.findOne({ conversationId });
