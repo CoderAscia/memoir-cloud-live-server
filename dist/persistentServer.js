@@ -78,10 +78,10 @@ wss.on("connection", async (socket, req) => {
             const cachedUserData = await redisClient.getSession(userId);
             user_timestampVersion = cachedUserData.timestampVersion;
             if (currentTimeStampVersion < user_timestampVersion) {
-                var deltaCharacters = await dbCharacters.find({ uid: userId, timestampVersion: { $gt: user_timestampVersion } }) ?? [];
-                var deltaConversations = await dbConversations.find({ uid: userId, timestampVersion: { $gt: user_timestampVersion } }) ?? [];
-                var deltaMessages = await dbMessages.find({ uid: userId, timestampVersion: { $gt: user_timestampVersion } }) ?? [];
-                var deltaMemories = await dbMemories.find({ uid: userId, timestampVersion: { $gt: user_timestampVersion } }) ?? [];
+                var deltaCharacters = await dbCharacters.find({ uid: userId, timestampVersion: { $gt: currentTimeStampVersion } }) ?? [];
+                var deltaConversations = await dbConversations.find({ uid: userId, timestampVersion: { $gt: currentTimeStampVersion } }) ?? [];
+                var deltaMessages = await dbMessages.find({ uid: userId, timestampVersion: { $gt: currentTimeStampVersion } }) ?? [];
+                var deltaMemories = await dbMemories.find({ uid: userId, timestampVersion: { $gt: currentTimeStampVersion } }) ?? [];
                 const deltaData = {
                     characters: deltaCharacters,
                     conversations: deltaConversations,
