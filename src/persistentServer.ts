@@ -115,10 +115,10 @@ wss.on("connection", async (socket: WebSocket, req) => {
       // satisfy the `< user_timestampVersion` condition causing a double-send.
       if (currentTimeStampVersion === '0.0.0') {
 
-        const deltaCharacters = await dbCharacters.find({ uid: userId }, { projection: { _id: 0 } });
-        const deltaConversations = await dbConversations.find({ uid: userId }, { projection: { _id: 0 } });
-        const deltaMessages = await dbMessages.find({ uid: userId }, { projection: { _id: 0 } });
-        const deltaMemories = await dbMemories.find({ uid: userId }, { projection: { _id: 0 } });
+        const deltaCharacters = await dbCharacters.find({ uid: userId }, { projection: { _id: 0, type: 0 } });
+        const deltaConversations = await dbConversations.find({ uid: userId }, { projection: { _id: 0, type: 0 } });
+        const deltaMessages = await dbMessages.find({ uid: userId }, { projection: { _id: 0, type: 0 } });
+        const deltaMemories = await dbMemories.find({ uid: userId }, { projection: { _id: 0, type: 0 } });
 
         const deltaData: DeltaData = {
           deltaCharacters: deltaCharacters,
@@ -132,10 +132,10 @@ wss.on("connection", async (socket: WebSocket, req) => {
         console.log("Sent full user data");
       } else if (currentTimeStampVersion < user_timestampVersion) {
 
-        const deltaCharacters = await dbCharacters.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0 } }) ?? [];
-        const deltaConversations = await dbConversations.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0 } }) ?? [];
-        const deltaMessages = await dbMessages.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0 } }) ?? [];
-        const deltaMemories = await dbMemories.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0 } }) ?? [];
+        const deltaCharacters = await dbCharacters.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0, type: 0 } }) ?? [];
+        const deltaConversations = await dbConversations.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0, type: 0 } }) ?? [];
+        const deltaMessages = await dbMessages.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0, type: 0 } }) ?? [];
+        const deltaMemories = await dbMemories.find({ uid: userId, lastModified: { $gt: currentTimeStampVersion } }, { projection: { _id: 0, type: 0 } }) ?? [];
 
         const deltaData: DeltaData = {
           deltaCharacters: deltaCharacters,
@@ -227,13 +227,6 @@ wss.on("connection", async (socket: WebSocket, req) => {
 
     } else if (parsedMessage.type == "chat") {
       const { conversationId, message: msgContent, messageId } = parsedMessage;
-      const conv_init = await dbConversations.findOne({ conversationId });
-
-      // FIX #3: Send an error back instead of silently dropping the request
-      if (!conv_init) {
-        console.log("Conversation not found, creating new conversation");
-        await dbConversations.create({ uid: userId, conversationId, conversationTitle: msgContent.substring(0, 50), lastModified: Date.now().toString() } as any);
-      }
 
       const conv = await dbConversations.findOne({ conversationId });
       if (!conv) throw new Error("Conversation not found");
