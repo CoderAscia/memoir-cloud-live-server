@@ -7,7 +7,7 @@ export async function handleMessage(context: Context, parsedMessage: any) {
 
   if (parsedMessage.type === "getMessages") {
     const { conversationId, lastMessageTimestamp, limit = 20 } = parsedMessage;
-    let filter: any = { conversationId };
+    const filter: any = { conversationId };
 
     if (!lastMessageTimestamp) {
       const cachedMessages = await redisClient.getConversationCache(conversationId);

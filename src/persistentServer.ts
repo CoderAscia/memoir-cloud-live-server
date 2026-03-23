@@ -49,7 +49,7 @@ async function startServer() {
     // so the version is never silently lost.
     const TTL = 180;
 
-    async function updateSyncTimestamp(userId: string) {
+    const updateSyncTimestamp = async (userId: string) => {
       const newVersion = Date.now().toString();
       const cachedUserData = await redisClient.getSession(userId);
 
@@ -58,7 +58,7 @@ async function startServer() {
 
       // Cache is cold (expired/evicted) — persist directly to DB so it's not lost
       await dbUsers.update({ uid: userId }, { $set: { timestampVersion: newVersion } });
-    }
+    };
 
     wss.on("connection", async (socket: WebSocket, req) => {
       const fullUrl = new URL(req.url ?? "", `http://${req.headers.host ?? "localhost"}`);
@@ -136,11 +136,11 @@ async function startServer() {
         });
 
         // --- SESSION INITIALIZATION ---
-        let cachedSession = await redisClient.getSession(userId);
+        const cachedSession = await redisClient.getSession(userId);
         if (cachedSession) {
           userData = cachedSession;
         } else {
-          let userDoc = await dbUsers.findOne({ uid: userId });
+          const userDoc = await dbUsers.findOne({ uid: userId });
           if (!userDoc) {
             const newChar: CharacterDocument = {
               characterId: uuidv4(), lastModified: Date.now().toString(), uid: userId, characterName: "Yuuki", characterImagePath: "assets/images/purple_kawaii.jpg",
