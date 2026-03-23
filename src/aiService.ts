@@ -1,9 +1,9 @@
 import OpenAI from 'openai';
 import DBHandler from './dbHandler';
-import RedisClient from './redisClient';
+import RedisCloudClient from './redisCloudClient';
 import { CharacterDocument, MemoryDocument, MessageDocument } from './interface_types';
 
-const redisClient = RedisClient.getInstance();
+const redisClient = RedisCloudClient.getInstance();
 
 class AIService {
     private openai: OpenAI;

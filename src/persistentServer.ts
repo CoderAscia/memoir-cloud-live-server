@@ -3,7 +3,7 @@ import admin from "./firebase_admin";
 import { v4 as uuidv4 } from 'uuid';
 import Database from "./database";
 import DBHandler from "./dbHandler";
-import RedisClient from "./redisClient";
+import RedisCloudClient from "./redisCloudClient";
 import aiService from "./aiService";
 import { UserDocument, CharacterDocument, MemoryDocument, ConversationDocument, MessageDocument } from "./interface_types";
 
@@ -22,7 +22,7 @@ const dbConversations = new DBHandler<ConversationDocument>("conversations");
 const dbMessages = new DBHandler<MessageDocument>("messages");
 const dbMemories = new DBHandler<MemoryDocument>("memories");
 
-const redisClient = RedisClient.getInstance();
+const redisClient = RedisCloudClient.getInstance();
 
 interface DeltaData {
   deltaCharacters: CharacterDocument[];

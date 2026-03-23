@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/persistentServer.js",
     "dev": "ts-node src/persistentServer.ts",
-    "test": "ts-node scripts/test.ts"
+    "test": "ts-node scripts/test.ts",
+    "lint": "eslint src/**/*.ts",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +25,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.0.0",
     "openai": "^6.29.0",
+    "redis": "^5.11.0",
     "uuid": "^13.0.0",
     "ws": "^8.18.3"
   },
@@ -33,6 +36,9 @@
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0"
   }
 }
