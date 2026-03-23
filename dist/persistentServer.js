@@ -48,7 +48,7 @@ const handlers_1 = require("./handlers");
 async function startServer() {
     try {
         // 1. Initialize Firebase
-        await (0, firebase_admin_1.initFirebase)();
+        await firebase_admin_1.default.getInstance();
         // 2. Initialize Database connection
         await database_1.default.getInstance();
         // 3. Initialize AI Service
@@ -129,7 +129,7 @@ async function startServer() {
                 }
                 else {
                     try {
-                        const decodedToken = await firebase_admin_1.default.auth().verifyIdToken(token ?? "");
+                        const decodedToken = await firebase_admin_1.admin.auth().verifyIdToken(token ?? "");
                         userId = decodedToken.uid;
                     }
                     catch (err) {

@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from "ws";
-import admin, { initFirebase } from "./firebase_admin";
+import FirebaseAdmin, { admin } from "./firebase_admin";
 import { v4 as uuidv4 } from 'uuid';
 import Database from "./database";
 import DBHandler from "./dbHandler";
@@ -13,7 +13,7 @@ import { routeMessage } from "./handlers";
 async function startServer() {
   try {
     // 1. Initialize Firebase
-    await initFirebase();
+    await FirebaseAdmin.getInstance();
 
     // 2. Initialize Database connection
     await Database.getInstance();
