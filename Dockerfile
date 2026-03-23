@@ -1,19 +1,29 @@
-FROM node:18-alpine as build
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy only package files first
 COPY package*.json ./
-RUN npm install
 
+# Clean install to avoid lockfile issues and handle peer conflicts
+RUN npm install --legacy-peer-deps
+
+# Copy the rest of the source code
 COPY . .
+
+# Build the project
 RUN npm run build
 
-FROM node:18-alpine as runtime
+# Stage 2: Production
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
+# Copy built files and production dependencies
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
 COPY package*.json ./
+
 EXPOSE 8080
-CMD ["npm", "start"]
+
+CMD ["node", "dist/persistentServer.js"]
