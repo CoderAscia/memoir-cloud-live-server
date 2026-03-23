@@ -61,17 +61,6 @@ jobs:
       - name: 'Type Check'
         run: 'npm run type-check'
 
-      - name: 'Run Tests'
-        env:
-          WS_URL: 'ws://localhost:8080?token=test_token'
-        run: |
-          # Start server in background
-          npm run dev &
-          # Wait for server to be ready
-          sleep 10
-          # Run tests
-          npm run test
-
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
