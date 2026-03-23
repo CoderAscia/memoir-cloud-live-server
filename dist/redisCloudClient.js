@@ -1,20 +1,11 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const redis_1 = require("redis");
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+const secretManager_1 = require("./secretManager");
 class RedisCloudClient {
-    constructor() {
-        const username = process.env.REDIS_CLOUD_USERNAME;
-        const password = process.env.REDIS_CLOUD_PASSWORD;
-        const host = process.env.REDIS_CLOUD_HOST;
-        const port = parseInt(process.env.REDIS_CLOUD_PORT || "", 10);
-        if (!username || !password || !host || !port) {
-            throw new Error('Missing Redis Cloud environment variables');
-        }
+    constructor(host, password) {
+        const username = process.env.REDIS_CLOUD_USERNAME || 'default';
+        const port = parseInt(process.env.REDIS_CLOUD_PORT || '10770', 10);
         this.client = (0, redis_1.createClient)({
             username,
             password,
@@ -26,9 +17,11 @@ class RedisCloudClient {
         this.client.on('error', err => console.error('Redis Cloud Client Error', err));
         this.client.on('connect', () => console.log('Redis Cloud Client Connected'));
     }
-    static getInstance() {
+    static async getInstance() {
         if (!RedisCloudClient.instance) {
-            RedisCloudClient.instance = new RedisCloudClient();
+            const host = await (0, secretManager_1.getSecret)('REDIS_CLOUD_HOST');
+            const password = await (0, secretManager_1.getSecret)('REDIS_CLOUD_PASSWORD');
+            RedisCloudClient.instance = new RedisCloudClient(host, password);
         }
         return RedisCloudClient.instance;
     }

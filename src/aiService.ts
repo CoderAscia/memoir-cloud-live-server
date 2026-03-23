@@ -1,9 +1,10 @@
 import OpenAI from 'openai';
 import DBHandler from './dbHandler';
 import RedisCloudClient from './redisCloudClient';
+import { getSecret } from './secretManager';
 import { CharacterDocument, MemoryDocument, MessageDocument } from './interface_types';
 
-const redisClient = RedisCloudClient.getInstance();
+
 
 class AIService {
     private openai: OpenAI;
@@ -11,16 +12,20 @@ class AIService {
     private dbMemories: DBHandler<MemoryDocument>;
     private dbMessages: DBHandler<MessageDocument>;
 
-    constructor() {
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            throw new Error("OPENAI_API_KEY environment variable is missing.");
-        }
+    private redisClient!: RedisCloudClient;
 
-        this.openai = new OpenAI({ apiKey });
+    constructor() {
+        this.openai = {} as OpenAI; // Placeholder, will be initialized in init()
         this.dbCharacters = new DBHandler<CharacterDocument>("characters");
         this.dbMemories = new DBHandler<MemoryDocument>("memories");
         this.dbMessages = new DBHandler<MessageDocument>("messages");
+    }
+
+    public async init() {
+        const apiKey = await getSecret("OPENAI_APIKEY");
+        this.openai = new OpenAI({ apiKey });
+        this.redisClient = await RedisCloudClient.getInstance();
+        console.log("AI Service initialized");
     }
 
     /**
@@ -66,7 +71,7 @@ Instructions:
 `;
 
         // 4. Fetch Chat History (Try Redis cache first, then MongoDB)
-        let messageHistoryDocs: any[] | null = await redisClient.getConversationCache(conversationId);
+        let messageHistoryDocs: any[] | null = await this.redisClient.getConversationCache(conversationId);
 
         if (messageHistoryDocs) {
             // Redis array has newest first, we just want the latest 20

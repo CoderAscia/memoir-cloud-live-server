@@ -63,7 +63,7 @@ jobs:
 
       - name: 'Run Tests'
         env:
-          WS_URL: 'ws://localhost:3030?token=test_token'
+          WS_URL: 'ws://localhost:8080?token=test_token'
         run: |
           # Start server in background
           npm run dev &
@@ -91,10 +91,6 @@ jobs:
             NODE_ENV=production
             REDIS_CLOUD_USERNAME=default
             REDIS_CLOUD_PORT=10770
-            REDIS_CLOUD_PASSWORD=${{secrets.REDIS_CLOUD_PASSWORD}}
-            REDIS_CLOUD_HOST=${{secrets.REDIS_CLOUD_HOST}}
-            OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}
-            MONGODB_URI=${{secrets.MONGODB_URI}}
       - name: 'Show output'
         run: |-
           echo ${{ steps.deploy.outputs.url }}

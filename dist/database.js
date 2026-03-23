@@ -1,24 +1,17 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongodb_1 = require("mongodb");
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+const secretManager_1 = require("./secretManager");
 class Database {
-    constructor() {
-        const uri = process.env.MONGODB_URI;
-        if (!uri) {
-            throw new Error('MONGODB_URI is not defined in environment variables');
-        }
+    constructor(uri) {
         this.client = new mongodb_1.MongoClient(uri);
         this.dbName = uri.split('/').pop()?.split('?')[0] || 'memoir_db';
         console.log(`MongoDB: Resolved database name as '${this.dbName}'`);
     }
     static async getInstance() {
         if (!Database.instance) {
-            Database.instance = new Database();
+            const uri = await (0, secretManager_1.getSecret)('MONGODB_URI');
+            Database.instance = new Database(uri);
             await Database.instance.connect();
         }
         return Database.instance;

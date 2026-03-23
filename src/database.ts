@@ -1,18 +1,12 @@
 import { MongoClient, Db } from 'mongodb';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { getSecret } from './secretManager';
 
 class Database {
     private static instance: Database;
     private client: MongoClient;
     private dbName: string;
 
-    private constructor() {
-        const uri = process.env.MONGODB_URI;
-        if (!uri) {
-            throw new Error('MONGODB_URI is not defined in environment variables');
-        }
+    private constructor(uri: string) {
         this.client = new MongoClient(uri);
         this.dbName = uri.split('/').pop()?.split('?')[0] || 'memoir_db';
         console.log(`MongoDB: Resolved database name as '${this.dbName}'`);
@@ -20,7 +14,8 @@ class Database {
 
     public static async getInstance(): Promise<Database> {
         if (!Database.instance) {
-            Database.instance = new Database();
+            const uri = await getSecret('MONGODB_URI');
+            Database.instance = new Database(uri);
             await Database.instance.connect();
         }
         return Database.instance;

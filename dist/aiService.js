@@ -6,17 +6,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const openai_1 = __importDefault(require("openai"));
 const dbHandler_1 = __importDefault(require("./dbHandler"));
 const redisCloudClient_1 = __importDefault(require("./redisCloudClient"));
-const redisClient = redisCloudClient_1.default.getInstance();
+const secretManager_1 = require("./secretManager");
 class AIService {
     constructor() {
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            throw new Error("OPENAI_API_KEY environment variable is missing.");
-        }
-        this.openai = new openai_1.default({ apiKey });
+        this.openai = {}; // Placeholder, will be initialized in init()
         this.dbCharacters = new dbHandler_1.default("characters");
         this.dbMemories = new dbHandler_1.default("memories");
         this.dbMessages = new dbHandler_1.default("messages");
+    }
+    async init() {
+        const apiKey = await (0, secretManager_1.getSecret)("OPENAI_APIKEY");
+        this.openai = new openai_1.default({ apiKey });
+        this.redisClient = await redisCloudClient_1.default.getInstance();
+        console.log("AI Service initialized");
     }
     /**
      * Generates an AI reply based on the character's soul, memories, and chat history.
@@ -55,7 +57,7 @@ Instructions:
 4. Keep responses concise and conversational unless the user asks for a long explanation.
 `;
         // 4. Fetch Chat History (Try Redis cache first, then MongoDB)
-        let messageHistoryDocs = await redisClient.getConversationCache(conversationId);
+        let messageHistoryDocs = await this.redisClient.getConversationCache(conversationId);
         if (messageHistoryDocs) {
             // Redis array has newest first, we just want the latest 20
             messageHistoryDocs = messageHistoryDocs.slice(0, 20);

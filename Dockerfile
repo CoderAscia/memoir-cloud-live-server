@@ -17,9 +17,7 @@ COPY . .
 RUN npm run build
 
 # Expose the WebSocket port
-EXPOSE 3030
-EXPOSE 3000
-EXPOSE 3001
+EXPOSE 8080
 
 CMD ["node", "dist/persistentServer.js"]
 # CMD [ "npx", "ts-node", "src/persistentServer.ts" ]
