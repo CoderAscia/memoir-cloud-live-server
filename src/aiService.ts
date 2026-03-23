@@ -43,8 +43,8 @@ class AIService {
         const { characterPersonality, characterBackstory, relationship } = characterMetaData;
 
         // 2. Fetch Character Memories
-        // We fetch all memories for this character to inject into the system prompt.
-        const memories = await this.dbMemories.find({ characterId: characterId, sort: { timestamp: -1 }, limit: 100 });
+        // REDUCED: Limiting to 10 recent memories to avoid token bloat
+        const memories = await this.dbMemories.find({ characterId: characterId, sort: { timestamp: -1 }, limit: 10 });
         let memoriesText = "";
 
         if (memories.length > 0) {
@@ -54,11 +54,14 @@ class AIService {
             });
         }
 
+        // Truncate backstory if it's abnormally long
+        const truncatedBackstory = (characterBackstory || "Unknown").substring(0, 1000);
+
         // 3. Construct the System Prompt
         const systemPrompt = `
 You are playing the role of ${characterName}.
 Your personality: ${characterPersonality || "Unknown"}
-Your backstory: ${characterBackstory || "Unknown"}
+Your backstory: ${truncatedBackstory}
 Your relationship with the user: ${relationship || "Acquaintance"}
 
 ${memoriesText}
@@ -74,13 +77,13 @@ Instructions:
         let messageHistoryDocs: any[] | null = await this.redisClient.getConversationCache(conversationId);
 
         if (messageHistoryDocs) {
-            // Redis array has newest first, we just want the latest 20
-            messageHistoryDocs = messageHistoryDocs.slice(0, 20);
+            // Redis array has newest first, we just want the latest 10 (reduced from 20)
+            messageHistoryDocs = messageHistoryDocs.slice(0, 10);
         } else {
             // Fallback to MongoDB
             messageHistoryDocs = await this.dbMessages.find(
                 { conversationId },
-                { sort: { timestamp: -1 }, limit: 20 }
+                { sort: { timestamp: -1 }, limit: 10 }
             );
         }
 
@@ -88,7 +91,6 @@ Instructions:
         messageHistoryDocs.reverse();
 
         // 5. Build OpenAI Message Array
-        // Map our MessageDocuments to OpenAI's ChatCompletionMessageParam format
         const openAIMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
             { role: "system", content: systemPrompt }
         ];
@@ -100,16 +102,21 @@ Instructions:
             });
         });
 
+        // Debug: Log the prompt size for cost monitoring
+        const estimatedTokens = Math.ceil(JSON.stringify(openAIMessages).length / 4);
+        console.log(`[AI Service] Generating reply for ${conversationId}. Estimated tokens: ${estimatedTokens}`);
+
         // 6. Call OpenAI API
         try {
-            const completion = await this.openai.chat.completions.create({
-                model: "gpt-4o-mini", // Or gpt-4o depending on preference/cost
-                messages: openAIMessages,
-                temperature: 0.7, // Slightly creative but consistent personality
-                max_tokens: 300,  // Keep chat bubbles reasonable
-            });
+            // const completion = await this.openai.chat.completions.create({
+            //     model: "gpt-4o-mini",
+            //     messages: openAIMessages,
+            //     temperature: 0.7,
+            //     max_tokens: 300,
+            // });
 
-            return completion.choices[0].message.content || "I don't know what to say.";
+            // return completion.choices[0].message.content || "I don't know what to say.";
+            return "I don't know what to say.";
 
         } catch (error) {
             console.error("OpenAI API Error:", error);

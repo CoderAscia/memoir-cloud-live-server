@@ -2,6 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { Context } from "../types";
 import { MessageDocument } from "../interface_types";
 
+// In-memory set to prevent overlapping AI generations for the same conversation
+const generatingConversations = new Set<string>();
+
 export async function handleMessage(context: Context, parsedMessage: any) {
   const { socket, userId, db, redisClient, ai, updateSyncTimestamp, TTL } = context;
 
@@ -34,6 +37,12 @@ export async function handleMessage(context: Context, parsedMessage: any) {
   } else if (parsedMessage.type === "chat") {
     const { conversationId, message: msgContent, messageId } = parsedMessage;
 
+    // Prevention of overlapping requests for the same conversation
+    if (generatingConversations.has(conversationId)) {
+        console.log(`[Message Handler] Skipping overlapping AI request for conversation ${conversationId}`);
+        return;
+    }
+
     const conv = await db.conversations.findOne({ conversationId });
     if (!conv) throw new Error("Conversation not found");
 
@@ -41,14 +50,20 @@ export async function handleMessage(context: Context, parsedMessage: any) {
     await db.messages.create(userMsg as any);
     await redisClient.appendMessageToCache(conversationId, userMsg, TTL);
 
-    const reply = await ai.generateReply(conv.characterId, conversationId);
-    const timestamp = Date.now().toString();
-    const aiMsg: MessageDocument = { messageId: uuidv4(), uid: userId, conversationId, messageTitle: "AI", messageContent: reply, lastModified: timestamp, sender: "ai" };
-    await db.messages.create(aiMsg as any);
-    await redisClient.appendMessageToCache(conversationId, aiMsg, TTL);
-    await db.conversations.update({ conversationId }, { $set: { lastModified: timestamp } });
+    try {
+        generatingConversations.add(conversationId);
+        const reply = await ai.generateReply(conv.characterId, conversationId);
+        const timestamp = Date.now().toString();
+        const aiMsg: MessageDocument = { messageId: uuidv4(), uid: userId, conversationId, messageTitle: "AI", messageContent: reply, lastModified: timestamp, sender: "ai" };
+        await db.messages.create(aiMsg as any);
+        await redisClient.appendMessageToCache(conversationId, aiMsg, TTL);
+        await db.conversations.update({ conversationId }, { $set: { lastModified: timestamp } });
 
-    await updateSyncTimestamp(userId);
-    socket.send(JSON.stringify({ type: "chat", message_id: aiMsg.messageId, reply, lastModified: timestamp }));
+        await updateSyncTimestamp(userId);
+        // CHANGED: response type to 'aiChatResponse' to prevent loops if client reflects 'chat'
+        socket.send(JSON.stringify({ type: "aiChatResponse", message_id: aiMsg.messageId, reply, lastModified: timestamp }));
+    } finally {
+        generatingConversations.delete(conversationId);
+    }
   }
 }

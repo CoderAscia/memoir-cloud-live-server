@@ -110,7 +110,7 @@ async function runTests() {
 
         // 6. chat
         console.log("\n6. Testing chat (this may take a few seconds as it hits OpenAI)...");
-        p = waitForResponse("chat");
+        p = waitForResponse("aiChatResponse");
         ws.send(JSON.stringify({
             type: "chat",
             conversationId: conversationId,
