@@ -122,6 +122,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
