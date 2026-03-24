@@ -126,6 +126,10 @@ jobs:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
           FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          REDIS_CLOUD_HOST: ${{ secrets.REDIS_CLOUD_HOST }}
+          REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
+          REDIS_CLOUD_USERNAME: ${{ secrets.REDIS_CLOUD_USERNAME }}
+          REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
         run: |
           docker-compose pull
           docker-compose up -d --force-recreate

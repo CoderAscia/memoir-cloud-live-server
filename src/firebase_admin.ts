@@ -11,7 +11,7 @@ class FirebaseAdmin {
   public static async getInstance(): Promise<FirebaseAdmin> {
     if (!FirebaseAdmin.instance) {
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || await getSecret("FIREBASE_CLIENT_EMAIL");
-      const privateKey = (process.env.FIREBASE_PRIVATE_KEY || await getSecret("FIREBASE_PRIVATE_KEY")).replace(/\\n/g, '\n');
+      const privateKey = (process.env.FIREBASE_PRIVATE_KEY || await getSecret("FIREBASE_PRIVATE_KEY"))!.replace(/\\n/g, '\n');
       const projectId = process.env.PROJECT_ID || await getSecret("PROJECT_ID");
 
       admin.initializeApp({
