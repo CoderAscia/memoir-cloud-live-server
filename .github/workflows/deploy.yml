@@ -31,7 +31,7 @@ name: 'Deploy to Cloud Run from Source'
 
 on:
   push:
-    branches: [ "main"]
+    branches: [ "**" ]
   pull_request:
     branches: [ "main"]
 
@@ -42,6 +42,7 @@ env:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: 'ubuntu-latest'
 
     permissions:
@@ -84,3 +85,45 @@ jobs:
       - name: 'Show output'
         run: |-
           echo ${{ steps.deploy.outputs.url }}
+
+  build-docker-image: # Build the Docker image
+    if: github.ref != 'refs/heads/main' 
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build the Docker image
+        run: |
+          docker build . --file Dockerfile --tag jlb027/memoir-cloud-live-server:latest --tag jlb027/memoir-cloud-live-server:${{ github.sha }}
+
+      - name: Push the Docker image
+        run: |
+          docker push jlb027/memoir-cloud-live-server:latest
+          docker push jlb027/memoir-cloud-live-server:${{ github.sha }}
+  
+  deploy-self-hosted: # Deploy the Docker image to the self-hosted runner for testing
+    if: github.ref == 'refs/heads/**'
+    runs-on: self-hosted
+    needs: build-docker-image
+    steps:  
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Containers
+        shell: cmd
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+        run: |
+          docker-compose pull
+          docker-compose up -d --force-recreate

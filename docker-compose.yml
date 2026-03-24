@@ -1,0 +1,45 @@
+services:
+  memoir-cloud-live-server:
+    image: jlb027/memoir-cloud-live-server:${IMAGE_TAG}
+    container_name: memoir-cloud-live-server
+    build: ./live-server
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=staging
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_CLOUD_HOST=${REDIS_CLOUD_HOST}
+      - REDIS_CLOUD_PASSWORD=${REDIS_CLOUD_PASSWORD}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+    restart: always
+
+  memoir-cloud-serverless:
+    image: jlb027/memoir-cloud-serverless:${IMAGE_TAG}
+    container_name: memoir-cloud-serverless
+    build: ./serverless
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=staging
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_CLOUD_HOST=${REDIS_CLOUD_HOST}
+      - REDIS_CLOUD_PASSWORD=${REDIS_CLOUD_PASSWORD}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+    restart: always
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - memoir-cloud-live-server
+      - memoir-cloud-serverless
+    restart: always

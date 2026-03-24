@@ -24,8 +24,8 @@ class RedisCloudClient {
 
     public static async getInstance(): Promise<RedisCloudClient> {
         if (!RedisCloudClient.instance) {
-            const host = await getSecret('REDIS_CLOUD_HOST');
-            const password = await getSecret('REDIS_CLOUD_PASSWORD');
+            const host = process.env.REDIS_CLOUD_HOST || await getSecret('REDIS_CLOUD_HOST');
+            const password = process.env.REDIS_CLOUD_PASSWORD || await getSecret('REDIS_CLOUD_PASSWORD');
             RedisCloudClient.instance = new RedisCloudClient(host, password);
         }
         return RedisCloudClient.instance;
