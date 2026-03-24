@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy Containers
-        shell: bash
+        shell: cmd
         env:
           NODE_ENV: staging
           IMAGE_TAG: ${{ github.sha }}
