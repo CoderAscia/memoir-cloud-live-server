@@ -109,7 +109,7 @@ jobs:
           docker push jlb027/memoir-cloud-serverless:latest
           docker push jlb027/memoir-cloud-serverless:${{ github.sha }}
   
-  deploy-self-hosted: # Deploy the Docker image to the self-hosted runner for testing
+  deploy-self-hosted: # Deploy the Docker image to the self-hosted runner for staging
     if: github.ref == 'refs/heads/staging'
     runs-on: self-hosted
     needs: build-docker-image
