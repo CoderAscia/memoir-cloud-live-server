@@ -8,11 +8,17 @@ export async function routeMessage(context: Context, parsedMessage: any, userDat
   const { type } = parsedMessage;
 
   if (type === "getLatestUserData") {
+    console.log(`Routing message to handleSync for user ${context.userId}`);
     await handleSync(context, parsedMessage);
+
   } else if (["getMessages", "createConversation", "chat"].includes(type)) {
+    console.log(`Routing message to handleMessage for user ${context.userId}`);
     await handleMessage(context, parsedMessage);
+
   } else if (["createMemory", "updateMemory", "deleteMemory"].includes(type)) {
+    console.log(`Routing message to handleMemory for user ${context.userId}`);
     await handleMemory(context, parsedMessage, userData);
+
   } else {
     console.warn(`Unknown message type: ${type}`);
   }

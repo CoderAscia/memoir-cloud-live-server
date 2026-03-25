@@ -74,7 +74,9 @@ async function startServer() {
                     messageBuffer.push(data);
                 }
             };
-            socket.on("message", earlyMessageHandler);
+            if (!isInitialized) {
+                socket.on("message", earlyMessageHandler);
+            }
 
             // Core message processing logic
             const processMessage = async (data: WebSocket.RawData, currentUserData: UserDocument) => {
@@ -89,9 +91,10 @@ async function startServer() {
                     TTL
                 };
 
-                await redisClient.expireSession(currentUserData.userId, TTL);
+
                 const message = data.toString();
                 console.log(`Processing message from user ${currentUserData.userId}: ${message.substring(0, 50)}...`);
+                await redisClient.expireSession(currentUserData.userId, TTL);
 
                 let parsedMessage;
                 try {
@@ -164,11 +167,13 @@ async function startServer() {
                 }
 
                 // --- COMPLETION & BUFFER PROCESSING ---
-                isInitialized = true;
-                socket.off("message", earlyMessageHandler);
-                socket.on("message", processMessage);
-                console.log(`Processing ${messageBuffer.length} buffered messages...`);
-                for (const msg of messageBuffer) await processMessage(msg, userData);
+                if (!isInitialized) {
+                    isInitialized = true;
+                    socket.off("message", earlyMessageHandler);
+                    socket.on("message", processMessage);
+                    console.log(`Processing ${messageBuffer.length} buffered messages...`);
+                    for (const msg of messageBuffer) await processMessage(msg, userData);
+                }
             } catch (err) {
                 console.error("Connection initialization error:", err);
                 socket.close();
