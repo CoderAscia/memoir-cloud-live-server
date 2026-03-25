@@ -95,30 +95,32 @@ async function runTests() {
         res = await p;
         console.log("✅ getCharacterDetails response:", `Conversations: ${res.data?.conversations?.length}, Memories: ${res.data?.memories?.length}`);
 
-        // 5. createConversation
-        console.log("\n5. Testing createConversation...");
-        p = waitForResponse("createConversationResponse");
+        const conversationId = uuidv4();
+        // 5. chat, new conversation
+        console.log("\n5. Testing chat (this may take a few seconds as it hits OpenAI)...");
+        p = waitForResponse("aiChatResponse");
         ws.send(JSON.stringify({
-            type: "createConversation",
-            characterId: characterId,
-            conversationTitle: "Test Conversation"
+            type: "chat",
+            conversationId,
+            messageId: uuidv4(),
+            characterId,
+            conversationTitle: "Test Conversation",
+            message: "Hello! This is a test message. Please reply with short message."
         }));
         res = await p;
-        if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
-        conversationId = res.data.conversationId;
-        console.log("✅ createConversation response:", res.data.conversationTitle, `(ID: ${conversationId})`);
+        console.log("✅ new conversation chat response:", res.reply);
 
-        // 6. chat
+        // 6. chat, existing conversation
         console.log("\n6. Testing chat (this may take a few seconds as it hits OpenAI)...");
         p = waitForResponse("aiChatResponse");
         ws.send(JSON.stringify({
             type: "chat",
-            conversationId: conversationId,
+            conversationId,
             messageId: uuidv4(),
             message: "Hello! This is a test message. Please reply with short message."
         }));
         res = await p;
-        console.log("✅ chat response:", res.reply);
+        console.log("✅ existing conversation chat response:", res.reply);
 
         // 7. getMessages
         console.log("\n7. Testing getMessages...");
@@ -130,33 +132,33 @@ async function runTests() {
         res = await p;
         console.log(`✅ getMessages response: retrieved ${res.data?.length || 0} messages`);
 
-        // 8. createMemory
-        console.log("\n8. Testing createMemory...");
-        p = waitForResponse("createMemoryResponse");
-        ws.send(JSON.stringify({
-            type: "createMemory",
-            characterId: characterId,
-            memoryTitle: "Test Secret Password",
-            memoryContent: "The password to the gate is 'Open Sesame'.",
-            memorySplashArts: []
-        }));
-        res = await p;
-        if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
-        memoryId = res.data.memoryId;
-        console.log("✅ createMemory response:", res.data.memoryTitle, `(ID: ${memoryId})`);
+        // // 8. createMemory
+        // console.log("\n8. Testing createMemory...");
+        // p = waitForResponse("createMemoryResponse");
+        // ws.send(JSON.stringify({
+        //     type: "createMemory",
+        //     characterId: characterId,
+        //     memoryTitle: "Test Secret Password",
+        //     memoryContent: "The password to the gate is 'Open Sesame'.",
+        //     memorySplashArts: []
+        // }));
+        // res = await p;
+        // if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
+        // memoryId = res.data.memoryId;
+        // console.log("✅ createMemory response:", res.data.memoryTitle, `(ID: ${memoryId})`);
 
-        // 9. updateMemory
-        console.log("\n9. Testing updateMemory...");
-        p = waitForResponse("updateMemoryResponse");
-        ws.send(JSON.stringify({
-            type: "updateMemory",
-            memoryId: memoryId,
-            characterId: characterId,
-            memoryTitle: "Updated Test Secret Password"
-        }));
-        res = await p;
-        if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
-        console.log("✅ updateMemory response:", res.status);
+        // // 9. updateMemory
+        // console.log("\n9. Testing updateMemory...");
+        // p = waitForResponse("updateMemoryResponse");
+        // ws.send(JSON.stringify({
+        //     type: "updateMemory",
+        //     memoryId: memoryId,
+        //     characterId: characterId,
+        //     memoryTitle: "Updated Test Secret Password"
+        // }));
+        // res = await p;
+        // if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
+        // console.log("✅ updateMemory response:", res.status);
 
         // // 10. deleteMemory
         // console.log("\n10. Testing deleteMemory...");

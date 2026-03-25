@@ -18,10 +18,10 @@ export interface Context {
   redisClient: RedisCloudClient;
   db: {
     users: DBHandler<UserDocument>;
-    characters: DBHandler<CharacterDocument>;
     conversations: DBHandler<ConversationDocument>;
-    messages: DBHandler<MessageDocument>;
     memories: DBHandler<MemoryDocument>;
+    messages: DBHandler<MessageDocument>;
+    characters: DBHandler<CharacterDocument>;
   };
   ai: typeof AIService;
   updateSyncTimestamp: (userId: string) => Promise<void>;

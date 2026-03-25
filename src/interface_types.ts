@@ -1,7 +1,9 @@
 
 interface UserDocument {
     uid: string;
-    timestampVersion: string;
+    lastSync: string;
+    list_conversation: string[];
+    list_characters: string[]
 }
 
 interface CharacterDocument {

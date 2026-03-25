@@ -1,20 +1,28 @@
 import { Context, DeltaData } from "../types";
+import { UserDocument } from "../interface_types";
 
 export async function handleSync(context: Context, parsedMessage: any) {
   const { socket, userId, redisClient, db } = context;
-
+  const TTL = context.TTL;
   // Get the last sync timestamp from the client
   const currentTimeStampVersion = parsedMessage['lastSyncVersion'];
   let user_timestampVersion: string;
 
   // Check if the user data is already in the cache
-  const cachedUserData = await redisClient.getSession(userId);
+  const cachedUserData: UserDocument | null = await redisClient.getSession(userId);
   if (cachedUserData) {
-    user_timestampVersion = cachedUserData.timestampVersion;
+    user_timestampVersion = cachedUserData.lastSync;
   } else {
     // Cache miss (expired/evicted) — fall back to the DB value
     const userDoc = await db.users.findOne({ uid: userId });
-    user_timestampVersion = userDoc?.timestampVersion ?? '0';
+
+    if (!userDoc) {
+      console.error(`User not found: ${userId}`);
+      return;
+    }
+    user_timestampVersion = userDoc.lastSync;
+
+    await redisClient.setSession(userId, userDoc, TTL);
   }
 
   if (currentTimeStampVersion === '0.0.0') {
