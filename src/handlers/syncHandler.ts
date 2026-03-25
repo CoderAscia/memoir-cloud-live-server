@@ -22,7 +22,7 @@ export async function handleSync(context: Context, parsedMessage: any) {
     }
     user_timestampVersion = userDoc.lastSync;
 
-    await redisClient.setSession(userId, userDoc, TTL);
+    await redisClient.safeSetSession(userId, userDoc, TTL);
   }
 
   if (currentTimeStampVersion === '0.0.0') {

@@ -11,7 +11,7 @@ export async function handleMemory(context: Context, parsedMessage: any, userDat
     await db.memories.create(newMemory as any);
     if (userData?.memories) {
       userData.memories.push(newMemory);
-      await redisClient.setSession(userId, userData, TTL);
+      await redisClient.safeSetSession(userId, userData, TTL);
     }
     await updateSyncTimestamp(userId);
     socket.send(JSON.stringify({ type: "createMemoryResponse", status: "success", data: newMemory }));
@@ -23,7 +23,7 @@ export async function handleMemory(context: Context, parsedMessage: any, userDat
       const idx = userData.memories.findIndex((m: any) => m.memoryId === memoryId);
       if (idx !== -1) {
         userData.memories[idx] = { ...userData.memories[idx], memoryTitle, memoryContent, memorySplashArts };
-        await redisClient.setSession(userId, userData, TTL);
+        await redisClient.safeSetSession(userId, userData, TTL);
       }
     }
     await updateSyncTimestamp(userId);
@@ -34,7 +34,7 @@ export async function handleMemory(context: Context, parsedMessage: any, userDat
     await db.memories.delete({ memoryId, characterId });
     if (userData?.memories) {
       userData.memories = userData.memories.filter((m: any) => m.memoryId !== memoryId);
-      await redisClient.setSession(userId, userData, TTL);
+      await redisClient.safeSetSession(userId, userData, TTL);
     }
     await updateSyncTimestamp(userId);
     socket.send(JSON.stringify({ type: "deleteMemoryResponse", status: "success", memoryId }));

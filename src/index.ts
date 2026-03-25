@@ -40,7 +40,6 @@ async function startServer() {
         const TTL = 500;
 
         const updateSyncTimestamp = async (userId: string) => {
-            return;
             const newVersion = Date.now().toString();
             let cachedUserData = await redisClient.getSession(userId);
             if (!cachedUserData) {
@@ -51,7 +50,7 @@ async function startServer() {
             };
             //Update user cache timestamp
             cachedUserData.lastSync = newVersion;
-            await redisClient.setSession(userId, cachedUserData, TTL);
+            await redisClient.safeSetSession(userId, cachedUserData, TTL);
 
             // Cache is cold (expired/evicted) — persist directly to DB so it's not lost
             await dbUsers.update({ userId }, { $set: { lastSync: newVersion } });
@@ -161,7 +160,7 @@ async function startServer() {
                     }
 
                     console.log("Caching user data:", userData);
-                    await redisClient.setSession(userData.userId, userData, TTL);
+                    await redisClient.safeSetSession(userData.userId, userData, TTL);
                 }
 
                 // --- COMPLETION & BUFFER PROCESSING ---

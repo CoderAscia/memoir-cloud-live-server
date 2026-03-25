@@ -52,7 +52,7 @@ class RedisCloudClient {
     /**
      * Stores session data in Redis with an optional TTL.
      */
-    public async setSession(key: string, data: any, ttlSeconds: number = 3600): Promise<void> {
+    private async setSession(key: string, data: any, ttlSeconds: number = 3600): Promise<void> {
         await this.connect();
         await this.client.set(key, JSON.stringify(data), { EX: ttlSeconds });
     }
@@ -65,6 +65,29 @@ class RedisCloudClient {
         const data = await this.client.get(key);
         return data ? JSON.parse(data) : null;
     }
+
+    // --- Safe Redis Helpers ---
+    public async safeSetSession(userId: string | undefined, data: any, ttl: number): Promise<void> {
+        if (!userId) {
+            console.error("❌ safeSetSession: userId is undefined, skipping Redis set");
+            return;
+        }
+        if (!data) {
+            console.error(`❌ safeSetSession: data for user ${userId} is undefined, skipping Redis set`);
+            return;
+        }
+        console.log(`✅ safeSetSession: storing session for user ${userId}`);
+        await this.setSession(userId, data, ttl);
+    };
+
+    public async safeExpireSession(userId: string | undefined, ttl: number): Promise<void> {
+        if (!userId) {
+            console.error("❌ safeExpireSession: userId is undefined, skipping Redis expire");
+            return;
+        }
+        console.log(`✅ safeExpireSession: expiring session for user ${userId}`);
+        await this.expireSession(userId, ttl);
+    };
 
     /**
      * Updates the TTL of an existing session.
