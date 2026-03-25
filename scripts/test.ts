@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 dotenv.config();
 const ws = new WebSocket(process.env.WS_URL!);
 
-let characterId = "";
+let characterId = "1234";
 let conversationId = "";
 let memoryId = "";
 let version = "0.0.0";
@@ -53,48 +53,6 @@ async function runTests() {
         } else {
             console.log(`   Already up to date (timestampVersion: ${res.timestampVersion})`);
         }
-        return;
-        // 2. createCharacter
-        console.log("\n2. Testing createCharacter...");
-        p = waitForResponse("createCharacterResponse");
-        ws.send(JSON.stringify({
-            type: "createCharacter",
-            characterName: `Test_Character`,
-            characterImagePath: "https://example.com/test.png",
-            characterMetaData: {
-                characterStickers: [],
-                chatBackgroundImage: "",
-                relationship: "Friend",
-                characterPersonality: "Helpful and wise",
-                characterBackstory: "An old wizard from the mountains."
-            }
-        }));
-        res = await p;
-        if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
-        characterId = res.data.characterId;
-        console.log("✅ createCharacter response:", res.data.characterName, `(ID: ${characterId})`);
-
-        // 3. updateCharacter
-        console.log("\n3. Testing updateCharacter...");
-        p = waitForResponse("updateCharacterResponse");
-        ws.send(JSON.stringify({
-            type: "updateCharacter",
-            characterId: characterId,
-            characterName: `Test_Char_Updated_${Date.now()}`
-        }));
-        res = await p;
-        if (res.status !== 'success') throw new Error(res.message || JSON.stringify(res));
-        console.log("✅ updateCharacter response:", res.status);
-
-        // 4. getCharacterDetails
-        console.log("\n4. Testing getCharacterDetails...");
-        p = waitForResponse("characterDetailsResponse");
-        ws.send(JSON.stringify({
-            type: "getCharacterDetails",
-            characterId: characterId
-        }));
-        res = await p;
-        console.log("✅ getCharacterDetails response:", `Conversations: ${res.data?.conversations?.length}, Memories: ${res.data?.memories?.length}`);
 
         const conversationId = uuidv4();
         // 5. chat, new conversation
