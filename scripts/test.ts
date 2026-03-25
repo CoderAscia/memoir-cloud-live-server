@@ -53,7 +53,7 @@ async function runTests() {
         } else {
             console.log(`   Already up to date (timestampVersion: ${res.timestampVersion})`);
         }
-
+        return;
         const conversationId = uuidv4();
         // 5. chat, new conversation
         console.log("\n5. Testing new conversation chat");

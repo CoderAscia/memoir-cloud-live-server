@@ -37,6 +37,8 @@ export async function handleMessage(context: Context, parsedMessage: any) {
   } else if (parsedMessage.type === "chat") {
     const { conversationId, characterId, conversationTitle, message: msgContent, messageId } = parsedMessage;
 
+    console.log("chat message received: ", parsedMessage);
+
     if (!conversationId) {
       console.error("❌ chat: conversationId is missing");
       socket.send(JSON.stringify({ type: "error", message: "conversationId required" }));

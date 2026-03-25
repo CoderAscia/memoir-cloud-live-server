@@ -1,5 +1,6 @@
 import { Context, DeltaData } from "../types";
 import { UserDocument } from "../interface_types";
+import console from "console";
 
 export async function handleSync(context: Context, parsedMessage: any) {
   const { socket, userId, redisClient, db } = context;
@@ -23,6 +24,7 @@ export async function handleSync(context: Context, parsedMessage: any) {
     user_timestampVersion = userDoc.lastSync;
 
     await redisClient.safeSetSession(userId, userDoc, TTL);
+    console.log(`✅ User ${userId} found in DB and cached`);
   }
 
   if (currentTimeStampVersion === '0.0.0') {
