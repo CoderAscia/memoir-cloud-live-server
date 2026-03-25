@@ -44,11 +44,11 @@ async function startServer() {
             const cachedUserData = await redisClient.getSession(userId);
 
             //Update user cache timestamp
-            cachedUserData.timestampVersion = newVersion;
+            cachedUserData.lastSync = newVersion;
             await redisClient.setSession(userId, cachedUserData, TTL);
 
             // Cache is cold (expired/evicted) — persist directly to DB so it's not lost
-            await dbUsers.update({ uid: userId }, { $set: { timestampVersion: newVersion } });
+            await dbUsers.update({ uid: userId }, { $set: { lastSync: newVersion } });
         };
 
         wss.on("connection", async (socket: WebSocket, req) => {

@@ -209,7 +209,7 @@ async function runTests() {
 }
 
 ws.on('open', () => {
-    console.log("Connected to WebSocket Server at ws://localhost:3030?token=test_token");
+    console.log("Connected to WebSocket Server at ws://localhost:3000/ws?token=test_token");
     runTests();
 });
 
