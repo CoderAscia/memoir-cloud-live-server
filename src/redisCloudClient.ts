@@ -54,7 +54,7 @@ class RedisCloudClient {
      */
     private async setSession(key: string, data: any, ttlSeconds: number = 3600): Promise<void> {
         await this.connect();
-        await this.client.set(key, JSON.stringify(data), { EX: ttlSeconds });
+        await this.client.set(String(key), JSON.stringify(data), { EX: ttlSeconds });
     }
 
     /**
@@ -62,7 +62,7 @@ class RedisCloudClient {
      */
     public async getSession(key: string): Promise<any | null> {
         await this.connect();
-        const data = await this.client.get(key);
+        const data = await this.client.get(String(key));
         return data ? JSON.parse(data) : null;
     }
 
