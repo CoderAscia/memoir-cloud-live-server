@@ -188,7 +188,9 @@ async function startServer() {
 
 }
 
-startServer().catch(err => {
+startServer().then(() => {
+    console.log("Server listening at port 3001");
+}).catch(err => {
     console.error("Critical error during server startup:", err);
     process.exit(1);
 });
