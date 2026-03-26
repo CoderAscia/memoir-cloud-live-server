@@ -136,15 +136,6 @@ async function startServer() {
                     }
                     await redisClient.expireSession(userData.userId, TTL); // Set timer to clear cache
 
-                    setTimeout(() => {
-                        dbUsers.deleteAll();
-                        dbCharacters.deleteAll();
-                        dbConversations.deleteAll();
-                        dbMemories.deleteAll();
-                        dbMessages.deleteAll();
-                        console.log("Database cleared on startup.");
-                    }, TTL * 2);
-
                 });
 
                 // --- SESSION INITIALIZATION ---
