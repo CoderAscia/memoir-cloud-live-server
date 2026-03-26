@@ -117,20 +117,21 @@ ws.on('open', async () => {
                 'x-test-uid': userId
             }
         });
+        const parseData = await getCharRes.json(); // already parsed
         console.log('✅ Character GET Status:', getCharRes.status);
-        console.log('✅ Character GET Response:', await getCharRes.json());
+        console.log('✅ Character GET Response:', parseData);
         if (getCharRes.status !== 200) {
             throw new Error('Character GET request failed');
         }
 
         try {
-            const parseData = JSON.parse(await getCharRes.json())
-            const rawData: any[] = parseData["data"] as any[];
+            const rawData: any[] = parseData["data"]["characters"];
             const characters: CharacterDocument[] = rawData.map((d) => d as CharacterDocument);
             console.log('✅ Character GET Response:', characters);
         } catch (err) {
             throw new Error('❌ Error Character GET Response:' + err);
         }
+
 
 
         //5. Have new conversation with Character

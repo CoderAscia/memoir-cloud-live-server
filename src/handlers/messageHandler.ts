@@ -35,20 +35,9 @@ export async function handleMessage(context: Context, parsedMessage: any) {
     socket.send(JSON.stringify({ type: "messagesResponse", conversationId, data: messages }));
 
   } else if (parsedMessage.type === "chat") {
-    const { conversationId, characterId, conversationTitle, message: msgContent, messageId } = parsedMessage;
+    let { conversationId, characterId, conversationTitle, message: msgContent, messageId } = parsedMessage;
 
     console.log("chat message received: ", parsedMessage);
-
-    if (!conversationId) {
-      console.error("❌ chat: conversationId is missing");
-      socket.send(JSON.stringify({ type: "error", message: "conversationId required" }));
-      return;
-    }
-    if (!characterId) {
-      console.error("❌ chat: characterId is missing");
-      socket.send(JSON.stringify({ type: "error", message: "characterId required" }));
-      return;
-    }
 
     const createConversation = async () => {
       const newConv: ConversationDocument = {
@@ -63,16 +52,24 @@ export async function handleMessage(context: Context, parsedMessage: any) {
       return newConv;
     };
 
+
+    if (!conversationId) {
+      console.error("chat: conversationId is missing , new conversation will be created");
+      conversationId = (await createConversation()).conversationId;
+
+    }
+
+    if (!characterId) {
+      console.error("chat: characterId is missing");
+      socket.send(JSON.stringify({ type: "error", message: "characterId required" }));
+      return;
+    }
+
     if (generatingConversations.has(conversationId)) {
       console.log(`[Message Handler] Skipping overlapping AI request for conversation ${conversationId}`);
       return;
     }
 
-    let conv = await db.conversations.findOne({ conversationId }) as ConversationDocument | null;
-    if (!conv) {
-      console.log(`[Message Handler] Creating new conversation for user ${userId}`);
-      conv = await createConversation();
-    }
 
     const userMsg: MessageDocument = {
       messageId,
@@ -88,7 +85,7 @@ export async function handleMessage(context: Context, parsedMessage: any) {
 
     try {
       generatingConversations.add(conversationId);
-      const reply = await ai.generateReply(conv.characterId, conversationId);
+      const reply = await ai.generateReply(characterId, conversationId);
       const timestamp = Date.now().toString();
       const aiMsg: MessageDocument = {
         messageId: uuidv4(),
