@@ -116,7 +116,7 @@ Instructions:
             // });
 
             // return completion.choices[0].message.content || "I don't know what to say.";
-            return "I don't know what to say.";
+            return "Hi this is a test message from AI";
 
         } catch (error) {
             console.error("OpenAI API Error:", error);
