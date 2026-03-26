@@ -48,6 +48,7 @@ export async function handleMessage(context: Context, parsedMessage: any) {
         lastModified: Date.now().toString()
       };
       await db.conversations.create(newConv as any);
+      console.log("Conversation created: ", newConv);
       await updateSyncTimestamp(userId);
       return newConv;
     };

@@ -32,13 +32,6 @@ async function startServer() {
         redisClient.flushAll().then(async () => {
             console.log("Redis cache cleared on startup.");
 
-            //Clear dbuser , dbcharacter , dbconversation , dbmemory , dbmessage on server restart
-            await dbUsers.deleteAll();
-            await dbCharacters.deleteAll();
-            await dbConversations.deleteAll();
-            await dbMemories.deleteAll();
-            await dbMessages.deleteAll();
-            console.log("Database cleared on startup.");
         }).catch(err => {
             console.error("Failed to clear Redis cache:", err);
         });
