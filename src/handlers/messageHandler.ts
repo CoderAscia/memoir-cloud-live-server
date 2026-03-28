@@ -5,8 +5,33 @@ import { MessageDocument, ConversationDocument } from "../interface_types";
 // In-memory set to prevent overlapping AI generations for the same conversation
 const generatingConversations = new Set<string>();
 
+type Response = {
+  title: string;
+  message: string;
+};
+
+class ResponseGenerator {
+  private responses: Response[];
+
+  constructor() {
+    this.responses = [
+      { title: "Greeting", message: "Hello there! Hope you're having a great day." },
+      { title: "Motivation", message: "Keep pushing forward, success is closer than you think." },
+      { title: "Reminder", message: "Don't forget to take breaks and stay hydrated." },
+      { title: "Fun Fact", message: "Did you know? Honey never spoils." },
+    ];
+  }
+
+  public getRandomResponse(): Response {
+    const randomIndex = Math.floor(Math.random() * this.responses.length);
+    return this.responses[randomIndex];
+  }
+}
+
+
 export async function handleMessage(context: Context, parsedMessage: any) {
   const { socket, userId, db, redisClient, ai, updateSyncTimestamp, TTL } = context;
+  const generator = new ResponseGenerator();
 
   if (parsedMessage.type === "getMessages") {
     const { conversationId, lastMessageTimestamp, limit = 20 } = parsedMessage;
@@ -44,7 +69,7 @@ export async function handleMessage(context: Context, parsedMessage: any) {
         uid: userId,
         conversationId: uuidv4(),
         characterId,
-        conversationTitle: conversationTitle ?? "Untitled",
+        conversationTitle: conversationTitle ?? generator.getRandomResponse().title,
         lastModified: Date.now().toString()
       };
       await db.conversations.create(newConv as any);
@@ -86,13 +111,14 @@ export async function handleMessage(context: Context, parsedMessage: any) {
 
     try {
       generatingConversations.add(conversationId);
-      const reply = await ai.generateReply(characterId, conversationId);
+      // const reply = await ai.generateReply(characterId, conversationId);
+      const reply = generator.getRandomResponse().message;
       const timestamp = Date.now().toString();
       const aiMsg: MessageDocument = {
         messageId: uuidv4(),
         uid: userId,
         conversationId,
-        messageTitle: "AI",
+        messageTitle: generator.getRandomResponse().title,
         messageContent: reply,
         lastModified: timestamp,
         sender: "ai"
