@@ -86,7 +86,7 @@ async function startServer() {
                 socket.on("message", earlyMessageHandler);
             }
 
-            // Core message processing
+            // Core message processing logic
             const processMessage = async (data: WebSocket.RawData, currentUserData: UserDocument) => {
 
                 const context: Context = {
