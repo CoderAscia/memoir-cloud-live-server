@@ -36,6 +36,25 @@ services:
       - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
       - PROJECT_ID=${PROJECT_ID}
     restart: always
+
+  memoir-cloud-grpc-server:
+    image: jlb027/memoir-grpc-ai-handler:latest
+    container_name: memoir-cloud-grpc-server
+    build: ./grpc-server
+    ports:
+      - "50051:50051"
+    environment:
+      - NODE_ENV=staging
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_CLOUD_PORT=${REDIS_CLOUD_PORT}
+      - REDIS_CLOUD_HOST=${REDIS_CLOUD_HOST}
+      - REDIS_CLOUD_PASSWORD=${REDIS_CLOUD_PASSWORD}
+      - REDIS_CLOUD_USERNAME=${REDIS_CLOUD_USERNAME}
+      - PROJECT_ID=${PROJECT_ID}
+    restart: always
+
   nginx:
     image: nginx:latest
     container_name: nginx

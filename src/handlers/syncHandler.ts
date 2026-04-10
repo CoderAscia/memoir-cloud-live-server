@@ -58,8 +58,9 @@ export async function handleSync(context: Context, parsedMessage: any) {
     };
 
     socket.send(JSON.stringify({ "type": "syncResponse", "isLatest": false, "uid": userId, "delta_updates": deltaData }));
+    console.log("Sent delta updates");
   } else if (currentTimeStampVersion === user_timestampVersion) {
     socket.send(JSON.stringify({ "type": "syncResponse", "isLatest": true, "uid": userId, "delta_updates": null, "timestampVersion": user_timestampVersion }));
-    console.log("Sent latest user data");
+    console.log("User is already up to date");
   }
 }

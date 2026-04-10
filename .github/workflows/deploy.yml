@@ -111,6 +111,8 @@ jobs:
           REDIS_CLOUD_PASSWORD: ${{ secrets.REDIS_CLOUD_PASSWORD }}
           REDIS_CLOUD_USERNAME: ${{ secrets.REDIS_CLOUD_USERNAME }}
           REDIS_CLOUD_PORT: ${{ secrets.REDIS_CLOUD_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           docker-compose pull
           docker-compose up -d --force-recreate
